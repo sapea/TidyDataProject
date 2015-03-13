@@ -1,0 +1,42 @@
+setwd("//PC-SARA/Users/Sara/Coursera")
+subjectTrain<-read.table("GettingCleaningDataPROJECT/UCI HAR Dataset/train/subject_train.txt")
+xTrain<-read.table("GettingCleaningDataPROJECT/UCI HAR Dataset/train/X_train.txt")
+yTrain<-read.table("GettingCleaningDataPROJECT/UCI HAR Dataset/train/y_train.txt")
+subjectTest<-read.table("GettingCleaningDataPROJECT/UCI HAR Dataset/test/subject_test.txt")
+xTest<-read.table("GettingCleaningDataPROJECT/UCI HAR Dataset/test/X_test.txt")
+yTest<-read.table("GettingCleaningDataPROJECT/UCI HAR Dataset/test/y_test.txt")
+dim(subjectTest)
+dim(subjectTrain)
+subjectData<-rbind(subjectTest,subjectTrain)
+dim(subjectData)
+colnames(subjectData)<-"subject"
+dim(yTest)
+dim(yTrain)
+activityData<-rbind(yTest,yTrain)
+dim(activityData)
+colnames(activityData)<-"activity"
+dim(xTest)
+dim(xTrain)
+recordingsTotalData<-rbind(xTest,xTrain)
+dim(recordingsTotalData)
+subjectActivityData<-cbind(subjectData,activityData)
+dim(subjectActivityData)
+testTrainTotalData<-cbind(subjectActivityData,recordingsTotalData)
+dim(testTrainTotalData)
+features<-read.table("GettingCleaningDataPROJECT/UCI HAR Dataset/features.txt")
+recordingsTotalNames<-as.character(features[,2])
+recordingsLogic<-grepl("mean\\(\\)|std\\(\\)",recordingsTotalNames)
+testTrainData<-testTrainTotalData[,recordingsLogic]
+activityLabels<-read.table("GettingCleaningDataPROJECT/UCI HAR Dataset/activity_labels.txt")
+unclass(activityLabels)
+table(activityLabels)
+activityNumbers<-testTrainData$activity
+activityNames<-as.character(activityLabels[activityNumbers,2])
+testTrainData$activity<-activityNames
+recordingsNames<-recordingsTotalNames[recordingsLogic]
+colnames(testTrainData)[3:68]<-recordingsNames
+library(dplyr)
+tidyData<-testTrainData%>%group_by(activity,subject)%>%summarise_each(funs(mean),3:68)
+write.table(tidyData,file="GettingCleaningDataPROJECT/tidyData.txt",row.names=FALSE)
+tidyFinalData<-read.table(file="GettingCleaningDataPROJECT/tidyData.txt",header=TRUE)
+View(tidyFinalData)
